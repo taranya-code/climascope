@@ -16,6 +16,7 @@ export default function PlaceSearch({ onSelect }: Props) {
   const [results, setResults] = useState<PlaceSuggestion[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   async function handleSearch(event: FormEvent) {
     event.preventDefault();
@@ -37,7 +38,39 @@ export default function PlaceSearch({ onSelect }: Props) {
   function handleSelect(place: PlaceSuggestion) {
     onSelect(place);
     setResults(null);
+    setError(null);
     setQuery(formatPlace(place));
+  }
+
+  function handleUseMyLocation() {
+    if (!navigator.geolocation) {
+      setError("Geolocation isn't supported by this browser.");
+      return;
+    }
+
+    setIsLocating(true);
+    setError(null);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsLocating(false);
+        handleSelect({
+          name: "My current location",
+          country: null,
+          admin1: null,
+          lat: Number(position.coords.latitude.toFixed(5)),
+          lon: Number(position.coords.longitude.toFixed(5)),
+        });
+      },
+      (geoError) => {
+        setIsLocating(false);
+        setError(
+          geoError.code === geoError.PERMISSION_DENIED
+            ? "Location permission denied — search for a place instead, or enter coordinates manually."
+            : "Couldn't determine your location — search for a place instead.",
+        );
+      },
+      { timeout: 10_000, maximumAge: 5 * 60_000 },
+    );
   }
 
   return (
@@ -55,6 +88,15 @@ export default function PlaceSearch({ onSelect }: Props) {
           </button>
         </div>
       </label>
+
+      <button
+        type="button"
+        className="text-button locate-button"
+        onClick={handleUseMyLocation}
+        disabled={isLocating}
+      >
+        {isLocating ? "Locating…" : "📍 Use my current location"}
+      </button>
 
       {error && <p className="muted error-text">{error}</p>}
 
