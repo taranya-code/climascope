@@ -33,6 +33,7 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
   const [electricityPrice, setElectricityPrice] = useState("");
   const [currencySymbol, setCurrencySymbol] = useState("$");
   const [systemCost, setSystemCost] = useState("");
+  const [gridIntensity, setGridIntensity] = useState("");
 
   function applyPreset(preset: PresetLocation) {
     setLat(preset.lat);
@@ -50,6 +51,7 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
     event.preventDefault();
     const price = parseFloat(electricityPrice);
     const cost = parseFloat(systemCost);
+    const intensity = parseFloat(gridIntensity);
 
     onSubmit({
       lat,
@@ -61,6 +63,7 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
       electricity_price_per_kwh: Number.isFinite(price) ? price : undefined,
       currency_symbol: currencySymbol || undefined,
       system_cost: Number.isFinite(cost) ? cost : undefined,
+      grid_intensity_kg_per_kwh: Number.isFinite(intensity) ? intensity : undefined,
     });
   }
 
@@ -149,7 +152,7 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
         className="text-button toggle-savings"
         onClick={() => setShowSavingsFields((v) => !v)}
       >
-        {showSavingsFields ? "− Hide" : "+ Add"} local electricity price for a savings estimate
+        {showSavingsFields ? "− Hide" : "+ Add"} local pricing &amp; grid details (optional)
       </button>
 
       {showSavingsFields && (
@@ -182,6 +185,17 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
               value={systemCost}
               onChange={(e) => setSystemCost(e.target.value)}
               placeholder="for payback estimate"
+            />
+          </label>
+          <label>
+            Grid intensity (kg CO₂/kWh)
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={gridIntensity}
+              onChange={(e) => setGridIntensity(e.target.value)}
+              placeholder="0.475 (global avg)"
             />
           </label>
         </div>

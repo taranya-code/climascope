@@ -1,4 +1,6 @@
 import { useState } from "react";
+import ComparisonTable from "./components/ComparisonTable";
+import type { ComparisonItem } from "./components/ComparisonTable";
 import LocationForm from "./components/LocationForm";
 import RecommendationsList from "./components/RecommendationsList";
 import ResultsPanel from "./components/ResultsPanel";
@@ -9,6 +11,7 @@ import type { AssessmentReport, AssessmentRequest } from "./types";
 
 export default function App() {
   const [report, setReport] = useState<AssessmentReport | null>(null);
+  const [comparison, setComparison] = useState<ComparisonItem[] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -19,12 +22,23 @@ export default function App() {
     try {
       const result = await createAssessment(payload);
       setReport(result);
+      setComparison(null);
       setRefreshKey((key) => key + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function handleSelectReport(selected: AssessmentReport) {
+    setReport(selected);
+    setComparison(null);
+  }
+
+  function handleCompare(items: ComparisonItem[]) {
+    setComparison(items);
+    setError(null);
   }
 
   return (
@@ -37,12 +51,14 @@ export default function App() {
       <main className="app-grid">
         <div className="app-column">
           <LocationForm onSubmit={handleAssess} isSubmitting={isSubmitting} />
-          <SavedSites refreshKey={refreshKey} onSelectReport={setReport} />
+          <SavedSites refreshKey={refreshKey} onSelectReport={handleSelectReport} onCompare={handleCompare} />
         </div>
 
         <div className="app-column">
           {error && <div className="card error">{error}</div>}
-          {report ? (
+          {comparison ? (
+            <ComparisonTable items={comparison} onClose={() => setComparison(null)} />
+          ) : report ? (
             <>
               <ResultsPanel report={report} />
               <RiskChart report={report} />

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Bar,
   CartesianGrid,
@@ -13,26 +14,52 @@ import type { AssessmentReport } from "../types";
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+type TempUnit = "C" | "F";
+
+function celsiusTo(unit: TempUnit, celsius: number): number {
+  return unit === "C" ? celsius : (celsius * 9) / 5 + 32;
+}
+
 interface Props {
   report: AssessmentReport;
 }
 
 export default function RiskChart({ report }: Props) {
+  const [unit, setUnit] = useState<TempUnit>("C");
+
   const data = MONTH_LABELS.map((month, i) => ({
     month,
-    maxTemp: report.monthly_max_temps_c[i],
-    meanTemp: report.monthly_mean_temps_c[i],
+    maxTemp: Math.round(celsiusTo(unit, report.monthly_max_temps_c[i]) * 10) / 10,
+    meanTemp: Math.round(celsiusTo(unit, report.monthly_mean_temps_c[i]) * 10) / 10,
     precip: report.monthly_precip_mm_day[i],
   }));
 
   return (
     <div className="card">
-      <h2>Monthly climate trend</h2>
+      <div className="comparison-header">
+        <h2>Monthly climate trend</h2>
+        <div className="unit-toggle">
+          <button
+            type="button"
+            className={unit === "C" ? "unit-button active" : "unit-button"}
+            onClick={() => setUnit("C")}
+          >
+            °C
+          </button>
+          <button
+            type="button"
+            className={unit === "F" ? "unit-button active" : "unit-button"}
+            onClick={() => setUnit("F")}
+          >
+            °F
+          </button>
+        </div>
+      </div>
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
           <XAxis dataKey="month" />
-          <YAxis yAxisId="temp" unit="°C" width={48} />
+          <YAxis yAxisId="temp" unit={`°${unit}`} width={48} />
           <YAxis yAxisId="precip" orientation="right" unit="mm/d" width={48} />
           <Tooltip />
           <Legend />

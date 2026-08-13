@@ -41,6 +41,10 @@ class AssessmentRequest(BaseModel):
     currency_symbol: str = Field(default="$", max_length=6)
     system_cost: float | None = Field(default=None, ge=0)
 
+    # Optional: grid carbon intensity varies enormously by country, so this
+    # overrides the global-average default used for the CO2-avoided estimate.
+    grid_intensity_kg_per_kwh: float | None = Field(default=None, ge=0)
+
 
 class Recommendation(BaseModel):
     title: str
@@ -81,6 +85,10 @@ class AssessmentReport(BaseModel):
     estimated_monthly_savings: float | None
     system_cost: float | None
     payback_years: float | None
+
+    grid_intensity_kg_per_kwh: float
+    annual_co2_avoided_kg: float
+    equivalent_trees_planted: float
 
     recommendations: list[Recommendation]
     created_at: datetime

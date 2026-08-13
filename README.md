@@ -14,18 +14,27 @@ spec, and it returns
 - wind energy potential (kWh/day, kWh/year, wind class),
 - a climate risk profile (heat-stress days, cooling/heating degree days,
   precipitation variability),
-- ranked adaptation recommendations synthesized from all of the above, and
+- ranked adaptation recommendations synthesized from all of the above,
+- CO2 emissions avoided per year (with a tree-equivalent, using a configurable
+  grid carbon intensity — see below), and
 - an optional cost-savings and payback estimate, in whatever local currency
   and electricity price you give it.
 
+Saved sites can be compared side by side — solar/wind output, climate risk,
+CO2 avoided, and savings across two or more locations in one table.
+
 **Built for anywhere, not just one country**: instead of requiring a
 latitude/longitude, you can search for a place by name — "Nairobi", "São
-Paulo", "Chiang Mai" — using a free global geocoding API. The savings estimate
-is currency-agnostic: it takes a raw price-per-kWh and a currency symbol you
-type in, rather than assuming USD. Try Phoenix, AZ vs. Seattle, WA vs. Mumbai,
-India and the climate numbers move in physically sensible, very different
-directions (Mumbai in particular has a precipitation variability index over
-2x Phoenix's or Seattle's, correctly reflecting its monsoon season).
+Paulo", "Chiang Mai" — using a free global geocoding API, or tap "use my
+current location" to read it straight from the browser's Geolocation API. The
+savings estimate is currency-agnostic (a raw price-per-kWh and a currency
+symbol you type in, not an assumed USD), and the CO2 estimate takes an
+optional local grid-carbon-intensity override, since that varies by an order
+of magnitude between countries. The climate chart also toggles between °C and
+°F. Try Phoenix, AZ vs. Seattle, WA vs. Mumbai, India and the climate numbers
+move in physically sensible, very different directions (Mumbai in particular
+has a precipitation variability index over 2x Phoenix's or Seattle's,
+correctly reflecting its monsoon season).
 
 ## Architecture
 
@@ -44,10 +53,11 @@ directions (Mumbai in particular has a precipitation variability index over
 
 `app/domain/` holds pure, dependency-free functions (solar/wind physics,
 degree-day math, the recommendation ranking, currency-agnostic savings/payback
-math) — that's the part with real substance, and it's unit tested against
-hand-computed values independent of the implementation. `app/clients/` holds
-the two network-facing pieces (NASA POWER, Open-Meteo geocoding), each tested
-with a mocked HTTP client, so the full test suite runs offline.
+math, region-configurable CO2-avoided math) — that's the part with real
+substance, and it's unit tested against hand-computed values independent of
+the implementation. `app/clients/` holds the two network-facing pieces (NASA
+POWER, Open-Meteo geocoding), each tested with a mocked HTTP client, so the
+full test suite runs offline.
 
 ## Setup
 
@@ -75,7 +85,7 @@ on port 8000.
 ## Testing
 
 ```bash
-cd backend && pytest        # 76 tests, domain logic + mocked API clients + integration
+cd backend && pytest        # 85 tests, domain logic + mocked API clients + integration
 cd frontend && npm run build # typechecks and builds the production bundle
 ```
 

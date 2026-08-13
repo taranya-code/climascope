@@ -75,6 +75,38 @@ def test_assess_with_price_computes_savings_in_given_currency(client, mock_clima
     assert body["payback_years"] == pytest.approx(15000 / expected_annual_savings, abs=0.05)
 
 
+def test_assess_uses_global_default_grid_intensity_when_unspecified(client, mock_climatology):
+    response = client.post("/assess", json={"lat": 33.45, "lon": -112.07})
+    body = response.json()
+
+    assert body["grid_intensity_kg_per_kwh"] == pytest.approx(0.475)
+    expected_co2 = (body["solar_annual_kwh"] + body["wind_annual_kwh"]) * 0.475
+    assert body["annual_co2_avoided_kg"] == pytest.approx(expected_co2, abs=0.1)
+    assert body["equivalent_trees_planted"] > 0
+
+
+def test_assess_respects_custom_grid_intensity(client, mock_climatology):
+    response = client.post(
+        "/assess", json={"lat": 33.45, "lon": -112.07, "grid_intensity_kg_per_kwh": 0.05}
+    )
+    body = response.json()
+
+    assert body["grid_intensity_kg_per_kwh"] == pytest.approx(0.05)
+    expected_co2 = (body["solar_annual_kwh"] + body["wind_annual_kwh"]) * 0.05
+    assert body["annual_co2_avoided_kg"] == pytest.approx(expected_co2, abs=0.1)
+
+
+def test_assess_respects_explicit_zero_grid_intensity(client, mock_climatology):
+    # a 100%-clean grid (e.g. hydro-only) is a legitimate value, not "unset"
+    response = client.post(
+        "/assess", json={"lat": 33.45, "lon": -112.07, "grid_intensity_kg_per_kwh": 0}
+    )
+    body = response.json()
+
+    assert body["grid_intensity_kg_per_kwh"] == 0
+    assert body["annual_co2_avoided_kg"] == 0
+
+
 def test_assess_reuses_existing_site_for_same_coordinates(client, mock_climatology):
     client.post("/assess", json={"lat": 10.0, "lon": 20.0})
     client.post("/assess", json={"lat": 10.0, "lon": 20.0})

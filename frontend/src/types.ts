@@ -36,6 +36,10 @@ export interface AssessmentReport {
   system_cost: number | null;
   payback_years: number | null;
 
+  grid_intensity_kg_per_kwh: number;
+  annual_co2_avoided_kg: number;
+  equivalent_trees_planted: number;
+
   recommendations: Recommendation[];
   created_at: string;
 }
@@ -50,6 +54,7 @@ export interface AssessmentRequest {
   electricity_price_per_kwh?: number;
   currency_symbol?: string;
   system_cost?: number;
+  grid_intensity_kg_per_kwh?: number;
 }
 
 export interface Site {

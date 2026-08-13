@@ -34,6 +34,11 @@ export default function ResultsPanel({ report }: Props) {
           <span className="stat-label">Precip. variability</span>
           <span className="stat-value">{report.precipitation_variability_index.toFixed(2)}</span>
         </div>
+        <div className="stat">
+          <span className="stat-label">CO₂ avoided</span>
+          <span className="stat-value">{report.annual_co2_avoided_kg.toLocaleString()} kg/yr</span>
+          <span className="stat-sub">≈ {report.equivalent_trees_planted.toLocaleString()} trees/yr</span>
+        </div>
         {report.estimated_annual_savings !== null && (
           <div className="stat">
             <span className="stat-label">Est. savings</span>

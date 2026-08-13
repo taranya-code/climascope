@@ -58,6 +58,10 @@ class Assessment(Base):
     system_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
     payback_years: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    grid_intensity_kg_per_kwh: Mapped[float] = mapped_column(Float)
+    annual_co2_avoided_kg: Mapped[float] = mapped_column(Float)
+    equivalent_trees_planted: Mapped[float] = mapped_column(Float)
+
     recommendations: Mapped[list[dict]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 

@@ -25,18 +25,18 @@ The API is served at `http://127.0.0.1:8000`; interactive docs at `http://127.0.
 pytest
 ```
 
-76 tests: pure-function unit tests for each domain module (`tests/test_solar.py`,
-`test_wind.py`, `test_climate_risk.py`, `test_adaptation.py`, `test_economics.py`)
-against hand-computed expected values, mocked-HTTP tests for the NASA POWER and
-geocoding clients (`test_nasa_power_client.py`, `test_geocoding_client.py`), and
-API integration tests against an in-memory SQLite database (`test_api.py`). No
-test hits the network.
+85 tests: pure-function unit tests for each domain module (`tests/test_solar.py`,
+`test_wind.py`, `test_climate_risk.py`, `test_adaptation.py`, `test_economics.py`,
+`test_emissions.py`) against hand-computed expected values, mocked-HTTP tests for
+the NASA POWER and geocoding clients (`test_nasa_power_client.py`,
+`test_geocoding_client.py`), and API integration tests against an in-memory
+SQLite database (`test_api.py`). No test hits the network.
 
 ## Layout
 
 - `app/domain/` — pure calculation functions (solar, wind, climate risk, adaptation
-  recommendations, currency-agnostic savings/payback). No I/O; this is where the
-  interesting logic lives.
+  recommendations, currency-agnostic savings/payback, region-configurable CO2
+  avoided). No I/O; this is where the interesting logic lives.
 - `app/clients/nasa_power.py` — client for NASA's free POWER climatology API.
 - `app/clients/geocoding.py` — client for Open-Meteo's free, global place-search API.
 - `app/models.py`, `app/schemas.py`, `app/db.py` — SQLAlchemy models, Pydantic
