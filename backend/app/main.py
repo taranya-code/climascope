@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import init_db
-from app.routers import assessment, sites
+from app.routers import assessment, geocode, sites
 
 # No auth, no cookies, no user data beyond what's typed into the form -- so a
 # wildcard is a safe default for this public demo API. Override with a
@@ -31,6 +31,7 @@ app.add_middleware(
 
 app.include_router(assessment.router, tags=["assessment"])
 app.include_router(sites.router, tags=["sites"])
+app.include_router(geocode.router, tags=["geocode"])
 
 
 @app.get("/health")

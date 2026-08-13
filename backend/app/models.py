@@ -51,6 +51,13 @@ class Assessment(Base):
     monthly_max_temps_c: Mapped[list[float]] = mapped_column(JSON)
     monthly_precip_mm_day: Mapped[list[float]] = mapped_column(JSON)
 
+    currency_symbol: Mapped[str] = mapped_column(String, default="$")
+    electricity_price_per_kwh: Mapped[float | None] = mapped_column(Float, nullable=True)
+    estimated_annual_savings: Mapped[float | None] = mapped_column(Float, nullable=True)
+    estimated_monthly_savings: Mapped[float | None] = mapped_column(Float, nullable=True)
+    system_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
+    payback_years: Mapped[float | None] = mapped_column(Float, nullable=True)
+
     recommendations: Mapped[list[dict]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 

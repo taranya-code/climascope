@@ -34,6 +34,20 @@ export default function ResultsPanel({ report }: Props) {
           <span className="stat-label">Precip. variability</span>
           <span className="stat-value">{report.precipitation_variability_index.toFixed(2)}</span>
         </div>
+        {report.estimated_annual_savings !== null && (
+          <div className="stat">
+            <span className="stat-label">Est. savings</span>
+            <span className="stat-value">
+              {report.currency_symbol}
+              {report.estimated_annual_savings.toLocaleString()}/yr
+            </span>
+            <span className="stat-sub">
+              {report.currency_symbol}
+              {report.estimated_monthly_savings?.toLocaleString()}/mo
+              {report.payback_years !== null && ` · ${report.payback_years}yr payback`}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

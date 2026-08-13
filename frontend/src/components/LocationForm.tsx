@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import type { AssessmentRequest } from "../types";
+import PlaceSearch from "./PlaceSearch";
+import type { AssessmentRequest, PlaceSuggestion } from "../types";
 
 interface PresetLocation {
   label: string;
@@ -28,14 +29,28 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
   const [rotorArea, setRotorArea] = useState(10);
   const [hubHeight, setHubHeight] = useState(20);
 
+  const [showSavingsFields, setShowSavingsFields] = useState(false);
+  const [electricityPrice, setElectricityPrice] = useState("");
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+  const [systemCost, setSystemCost] = useState("");
+
   function applyPreset(preset: PresetLocation) {
     setLat(preset.lat);
     setLon(preset.lon);
     setSiteName(preset.label.split(" (")[0]);
   }
 
+  function applyPlace(place: PlaceSuggestion) {
+    setLat(place.lat);
+    setLon(place.lon);
+    setSiteName(place.name);
+  }
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    const price = parseFloat(electricityPrice);
+    const cost = parseFloat(systemCost);
+
     onSubmit({
       lat,
       lon,
@@ -43,6 +58,9 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
       panel_area_m2: panelArea,
       turbine_rotor_area_m2: rotorArea,
       turbine_hub_height_m: hubHeight,
+      electricity_price_per_kwh: Number.isFinite(price) ? price : undefined,
+      currency_symbol: currencySymbol || undefined,
+      system_cost: Number.isFinite(cost) ? cost : undefined,
     });
   }
 
@@ -62,6 +80,8 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
           </button>
         ))}
       </div>
+
+      <PlaceSearch onSelect={applyPlace} />
 
       <label>
         Site name
@@ -123,6 +143,49 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
           />
         </label>
       </div>
+
+      <button
+        type="button"
+        className="text-button toggle-savings"
+        onClick={() => setShowSavingsFields((v) => !v)}
+      >
+        {showSavingsFields ? "− Hide" : "+ Add"} local electricity price for a savings estimate
+      </button>
+
+      {showSavingsFields && (
+        <div className="field-row">
+          <label>
+            Price / kWh
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={electricityPrice}
+              onChange={(e) => setElectricityPrice(e.target.value)}
+              placeholder="e.g. 0.15"
+            />
+          </label>
+          <label>
+            Currency symbol
+            <input
+              value={currencySymbol}
+              onChange={(e) => setCurrencySymbol(e.target.value)}
+              placeholder="$, €, ₹, ..."
+              maxLength={6}
+            />
+          </label>
+          <label>
+            System cost (optional)
+            <input
+              type="number"
+              min="0"
+              value={systemCost}
+              onChange={(e) => setSystemCost(e.target.value)}
+              placeholder="for payback estimate"
+            />
+          </label>
+        </div>
+      )}
 
       <button type="submit" className="primary-button" disabled={isSubmitting}>
         {isSubmitting ? "Assessing…" : "Run assessment"}

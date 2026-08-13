@@ -1,7 +1,9 @@
 import pytest
 
+from app.clients.geocoding import GeocodingError, PlaceResult
 from app.clients.nasa_power import ClimatologyData, NasaPowerError
 from app.routers import assessment as assessment_module
+from app.routers import geocode as geocode_module
 
 PHOENIX_LIKE_CLIMATOLOGY = ClimatologyData(
     avg_irradiance_kwh_m2_day=6.5,
@@ -42,6 +44,37 @@ def test_assess_creates_site_and_returns_full_report(client, mock_climatology):
     assert sites[0]["name"] == "Phoenix Warehouse Roof"
 
 
+def test_assess_without_price_omits_savings_fields(client, mock_climatology):
+    response = client.post("/assess", json={"lat": 33.45, "lon": -112.07})
+    body = response.json()
+
+    assert body["electricity_price_per_kwh"] is None
+    assert body["estimated_annual_savings"] is None
+    assert body["payback_years"] is None
+    assert body["currency_symbol"] == "$"
+
+
+def test_assess_with_price_computes_savings_in_given_currency(client, mock_climatology):
+    response = client.post(
+        "/assess",
+        json={
+            "lat": 33.45,
+            "lon": -112.07,
+            "panel_area_m2": 40,
+            "electricity_price_per_kwh": 0.20,
+            "currency_symbol": "€",
+            "system_cost": 15000,
+        },
+    )
+    body = response.json()
+
+    assert body["currency_symbol"] == "€"
+    assert body["electricity_price_per_kwh"] == pytest.approx(0.20)
+    expected_annual_savings = (body["solar_annual_kwh"] + body["wind_annual_kwh"]) * 0.20
+    assert body["estimated_annual_savings"] == pytest.approx(expected_annual_savings, abs=0.01)
+    assert body["payback_years"] == pytest.approx(15000 / expected_annual_savings, abs=0.05)
+
+
 def test_assess_reuses_existing_site_for_same_coordinates(client, mock_climatology):
     client.post("/assess", json={"lat": 10.0, "lon": 20.0})
     client.post("/assess", json={"lat": 10.0, "lon": 20.0})
@@ -80,3 +113,33 @@ def test_delete_site_removes_it(client, mock_climatology):
 def test_get_assessments_for_unknown_site_returns_404(client):
     response = client.get("/sites/999/assessments")
     assert response.status_code == 404
+
+
+def test_geocode_returns_place_suggestions(client, monkeypatch):
+    monkeypatch.setattr(
+        geocode_module,
+        "search_places",
+        lambda q: [PlaceResult(name="Nairobi", country="Kenya", admin1="Nairobi County", lat=-1.28, lon=36.82)],
+    )
+
+    response = client.get("/geocode", params={"q": "Nairobi"})
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {"name": "Nairobi", "country": "Kenya", "admin1": "Nairobi County", "lat": -1.28, "lon": 36.82}
+    ]
+
+
+def test_geocode_returns_502_on_upstream_failure(client, monkeypatch):
+    def raise_error(q):
+        raise GeocodingError("simulated outage")
+
+    monkeypatch.setattr(geocode_module, "search_places", raise_error)
+
+    response = client.get("/geocode", params={"q": "Nairobi"})
+    assert response.status_code == 502
+
+
+def test_geocode_rejects_empty_query(client):
+    response = client.get("/geocode", params={"q": ""})
+    assert response.status_code == 422

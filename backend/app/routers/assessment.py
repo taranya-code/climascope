@@ -6,6 +6,7 @@ from app.clients.nasa_power import NasaPowerError, fetch_climatology
 from app.db import get_db
 from app.domain.adaptation import rank_recommendations
 from app.domain.climate_risk import climate_risk_profile
+from app.domain.economics import estimate_savings, simple_payback_years
 from app.domain.solar import solar_potential
 from app.domain.wind import wind_potential
 
@@ -31,6 +32,17 @@ def create_assessment(payload: schemas.AssessmentRequest, db: Session = Depends(
         climatology.monthly_precip_mm_day,
     )
     recommendations = rank_recommendations(solar, wind, risk)
+
+    estimated_annual_savings = None
+    estimated_monthly_savings = None
+    payback_years = None
+    if payload.electricity_price_per_kwh is not None:
+        savings = estimate_savings(
+            solar["annual_kwh"], wind["annual_kwh"], payload.electricity_price_per_kwh
+        )
+        estimated_annual_savings = savings["annual_savings"]
+        estimated_monthly_savings = savings["monthly_savings"]
+        payback_years = simple_payback_years(payload.system_cost, estimated_annual_savings)
 
     site = (
         db.query(models.Site)
@@ -64,6 +76,12 @@ def create_assessment(payload: schemas.AssessmentRequest, db: Session = Depends(
         monthly_mean_temps_c=climatology.monthly_mean_temps_c,
         monthly_max_temps_c=climatology.monthly_max_temps_c,
         monthly_precip_mm_day=climatology.monthly_precip_mm_day,
+        currency_symbol=payload.currency_symbol,
+        electricity_price_per_kwh=payload.electricity_price_per_kwh,
+        estimated_annual_savings=estimated_annual_savings,
+        estimated_monthly_savings=estimated_monthly_savings,
+        system_cost=payload.system_cost,
+        payback_years=payback_years,
         recommendations=recommendations,
     )
     db.add(assessment)

@@ -29,6 +29,13 @@ export interface AssessmentReport {
   monthly_max_temps_c: number[];
   monthly_precip_mm_day: number[];
 
+  currency_symbol: string;
+  electricity_price_per_kwh: number | null;
+  estimated_annual_savings: number | null;
+  estimated_monthly_savings: number | null;
+  system_cost: number | null;
+  payback_years: number | null;
+
   recommendations: Recommendation[];
   created_at: string;
 }
@@ -40,6 +47,9 @@ export interface AssessmentRequest {
   panel_area_m2: number;
   turbine_rotor_area_m2: number;
   turbine_hub_height_m: number;
+  electricity_price_per_kwh?: number;
+  currency_symbol?: string;
+  system_cost?: number;
 }
 
 export interface Site {
@@ -48,4 +58,12 @@ export interface Site {
   lat: number;
   lon: number;
   created_at: string;
+}
+
+export interface PlaceSuggestion {
+  name: string;
+  country: string | null;
+  admin1: string | null;
+  lat: number;
+  lon: number;
 }

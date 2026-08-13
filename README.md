@@ -13,29 +13,41 @@ spec, and it returns
 - solar energy potential (kWh/day, kWh/year),
 - wind energy potential (kWh/day, kWh/year, wind class),
 - a climate risk profile (heat-stress days, cooling/heating degree days,
-  precipitation variability), and
-- ranked adaptation recommendations synthesized from all of the above.
+  precipitation variability),
+- ranked adaptation recommendations synthesized from all of the above, and
+- an optional cost-savings and payback estimate, in whatever local currency
+  and electricity price you give it.
 
-Every input can be a real place — try Phoenix, AZ vs. Seattle, WA from the
-built-in presets and the numbers move in opposite, physically sensible
-directions (solar/heat vs. rain/mild-heat).
+**Built for anywhere, not just one country**: instead of requiring a
+latitude/longitude, you can search for a place by name — "Nairobi", "São
+Paulo", "Chiang Mai" — using a free global geocoding API. The savings estimate
+is currency-agnostic: it takes a raw price-per-kWh and a currency symbol you
+type in, rather than assuming USD. Try Phoenix, AZ vs. Seattle, WA vs. Mumbai,
+India and the climate numbers move in physically sensible, very different
+directions (Mumbai in particular has a precipitation variability index over
+2x Phoenix's or Seattle's, correctly reflecting its monsoon season).
 
 ## Architecture
 
 ```
-┌─────────────────────┐        ┌──────────────────────────────┐        ┌────────────────────┐
-│  React + TS frontend │──────▶│  FastAPI backend               │──────▶│  NASA POWER API      │
-│  (Vite, recharts)    │  REST │  app/routers/  →  app/domain/  │ HTTPS │  (climatology, free,  │
-│  localhost:5173      │◀──────│  →  SQLite (SQLAlchemy)        │◀──────│   no API key)         │
-└─────────────────────┘        └──────────────────────────────┘        └────────────────────┘
+┌─────────────────────┐        ┌──────────────────────────────┐        ┌────────────────────────┐
+│  React + TS frontend │──────▶│  FastAPI backend               │──────▶│  NASA POWER API          │
+│  (Vite, recharts)    │  REST │  app/routers/  →  app/domain/  │ HTTPS │  (climatology, free, no  │
+│  localhost:5173      │◀──────│  →  SQLite (SQLAlchemy)        │◀──────│   API key)               │
+└─────────────────────┘        └──────────────────────────────┘        └────────────────────────┘
+                                            │                    HTTPS  ┌────────────────────────┐
+                                            └───────────────────────▶  │  Open-Meteo Geocoding    │
+                                                                   ◀───│  (place search, global,  │
+                                                                        │   free, no API key)     │
+                                                                        └────────────────────────┘
 ```
 
 `app/domain/` holds pure, dependency-free functions (solar/wind physics,
-degree-day math, the recommendation ranking) — that's the part with real
-substance, and it's unit tested against hand-computed values independent of
-the implementation. `app/clients/nasa_power.py` is the only network-facing
-piece and is tested with a mocked HTTP client, so the full test suite runs
-offline.
+degree-day math, the recommendation ranking, currency-agnostic savings/payback
+math) — that's the part with real substance, and it's unit tested against
+hand-computed values independent of the implementation. `app/clients/` holds
+the two network-facing pieces (NASA POWER, Open-Meteo geocoding), each tested
+with a mocked HTTP client, so the full test suite runs offline.
 
 ## Setup
 
@@ -63,7 +75,7 @@ on port 8000.
 ## Testing
 
 ```bash
-cd backend && pytest        # 54 tests, domain logic + mocked API client + integration
+cd backend && pytest        # 76 tests, domain logic + mocked API clients + integration
 cd frontend && npm run build # typechecks and builds the production bundle
 ```
 

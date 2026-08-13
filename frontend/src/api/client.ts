@@ -1,4 +1,4 @@
-import type { AssessmentReport, AssessmentRequest, Site } from "../types";
+import type { AssessmentReport, AssessmentRequest, PlaceSuggestion, Site } from "../types";
 
 // In dev, "/api" is rewritten to the local backend by the Vite proxy (see
 // vite.config.ts). In production there's no dev server to proxy through, so
@@ -40,4 +40,8 @@ export function deleteSite(siteId: number): Promise<void> {
 
 export function listSiteAssessments(siteId: number): Promise<AssessmentReport[]> {
   return request<AssessmentReport[]>(`/sites/${siteId}/assessments`);
+}
+
+export function searchPlaces(query: string): Promise<PlaceSuggestion[]> {
+  return request<PlaceSuggestion[]>(`/geocode?q=${encodeURIComponent(query)}`);
 }

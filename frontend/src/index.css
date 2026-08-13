@@ -131,6 +131,76 @@ input:focus {
   border-color: var(--accent);
 }
 
+.place-search {
+  margin-bottom: 14px;
+}
+
+.search-row {
+  display: flex;
+  gap: 6px;
+}
+
+.search-row input {
+  flex: 1;
+}
+
+.secondary-button {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--accent-dark);
+  cursor: pointer;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+
+.secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.search-results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.search-results li:not(:last-child) {
+  border-bottom: 1px solid var(--border);
+}
+
+.search-result-button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.search-result-button:hover {
+  background: var(--bg);
+}
+
+.error-text {
+  color: var(--error);
+}
+
+.toggle-savings {
+  margin: 4px 0 14px;
+  padding: 0;
+}
+
 .primary-button {
   width: 100%;
   padding: 10px;
