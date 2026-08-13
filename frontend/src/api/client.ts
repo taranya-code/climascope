@@ -1,6 +1,9 @@
 import type { AssessmentReport, AssessmentRequest, Site } from "../types";
 
-const API_BASE = "/api";
+// In dev, "/api" is rewritten to the local backend by the Vite proxy (see
+// vite.config.ts). In production there's no dev server to proxy through, so
+// VITE_API_BASE_URL must point straight at the deployed backend's origin.
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {

@@ -67,6 +67,20 @@ cd backend && pytest        # 54 tests, domain logic + mocked API client + integ
 cd frontend && npm run build # typechecks and builds the production bundle
 ```
 
+## Deploying
+
+Backend on [Render](https://render.com): New → Blueprint → connect this repo
+(picks up `render.yaml` automatically), or manually create a Web Service with
+root directory `backend`, build command `pip install -r requirements.txt`,
+start command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Note the
+free tier's disk is ephemeral, so saved sites reset on redeploy/restart --
+fine for a demo, swap to Postgres or a persistent disk for anything long-lived.
+
+Frontend on [Vercel](https://vercel.com): New Project → import this repo →
+root directory `frontend` (Vite is auto-detected) → add an environment
+variable `VITE_API_BASE_URL` set to the Render backend's URL (e.g.
+`https://climascope-api.onrender.com`, no trailing slash) → Deploy.
+
 ## Known simplifications
 
 Documented in code rather than hidden, since they're the natural follow-up
