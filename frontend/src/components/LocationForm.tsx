@@ -192,7 +192,7 @@ export default function LocationForm({ onSubmit, isSubmitting }: Props) {
             <input
               type="number"
               min="0"
-              step="0.01"
+              step="0.001"
               value={gridIntensity}
               onChange={(e) => setGridIntensity(e.target.value)}
               placeholder="0.475 (global avg)"
